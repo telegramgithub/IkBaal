@@ -1,0 +1,14 @@
+name;sortEvent;description;numberOfPlayers;
+Tornado;0;... en ... worden getroffen door een tornado en gaan 4 plekken terug om te schuilen.;2
+Overstroomt;5;Vak random-random+5 zijn overstroomd je kan er pas langs als je 6 of meer gooit.;0
+Zandstorm;2;Er ontstaat een zandstorm ... en ... slaan een beurt over.;2
+Bliksem;2;De bliksem is ingeslagen in het bos voor ... en het bos staat nu in brand sla een beurt over.;1
+Sinkhole;0;... valt in een sinkhole en gaat 10 plekken terug.;1
+Woestijn;2;Bij het trekken door een woestijn komt ... dorstig tot de oplossing om naar de oase te gaan, blijf hier een beurt om aan te sterken.;
+Aardbeving;3;Er is een aardbeving, het normale pad is ingestort en ... moet de omweg nemen.;
+Lawine;2;Een lawine maakt het pad onbegaanbaar, ... wacht een 2 beurten totdat het weggehaald is.;
+Orkaan;0;Een orkaan suist over het veld, ... en ... gaan 5 plekken terug om te schuilen.;
+Bergstorting;2;... belandt onder een bergstorting, Wacht tot de hulp aangekomen is.;
+Corona;2;... krijgt corona en beland op de IC. Sla 2 beurten over.;
+Grenscontrole;4;... mag met het paspoort niet door deze grens, gooi 6 om de douane succesvol om te kopen, neem anders de omweg.;
+Beer;2;... komt oog in oog met een beer, gooi 5 of hoger om hem te ontwijken. Ren anders 5 plekken terug;
