@@ -1,8 +1,6 @@
 public class Event {
-    String name;
-    int place;
+    String gebied;
     String description;
-    int waitTurn;
-    int placesBack;
-    int throwMinimum;
+    int minimumPlaces;
+    int maximumPlaces;
 }

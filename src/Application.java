@@ -18,12 +18,14 @@ public class Application{
 
     static ArrayList<Player> players = new ArrayList<>();
 
-
     static ArrayList<Integer> standardTurnCicle = new ArrayList<>();
     static ArrayList<Integer> turn = new ArrayList<>();
+
     static ArrayList<Event> events = new ArrayList<>();
 
-    public static void main(String[] args) throws InterruptedException {
+    static int timesBeforeEvent = 0;
+
+    public static void main(String[] args) {
         createMainPanel();
         createMainFrame();
         while (numberOfPlayers == 0) {
@@ -33,6 +35,9 @@ public class Application{
         pionChoice();
         throwPosition();
         turn.addAll(standardTurnCicle);
+        turn.addAll(standardTurnCicle);
+        Random random = new Random();
+        timesBeforeEvent = random.nextInt(numberOfPlayers*3) + numberOfPlayers*3;
         while (playing());
     }
 
@@ -79,7 +84,7 @@ public class Application{
             panel.removeAll();
             panel.revalidate();
             clicked = false;
-            for (int j = 0; j < pionnen.size(); j++) panel.add(createPionButton(i,j));
+            for (int j = 0; j < pionnen.size(); j++) createPionButton(i,j);
             JLabel label = new JLabel("Welke figuur wil speler " + i + " hebben?");
             label.setBounds(1920/2-100,400,200,25);
             label.setForeground(Color.WHITE);
@@ -90,7 +95,7 @@ public class Application{
         }
     }
 
-    public static JButton createPionButton(int i, int j) {
+    public static void createPionButton(int i, int j) {
         JButton button = new JButton("" + pionnen.get(j));
         button.setBounds(285 + (200 * j) + i * 100,500, 150, 50);
         button.addActionListener(e -> {
@@ -103,7 +108,7 @@ public class Application{
         button.setForeground(Color.WHITE);
         button.setFocusable(false);
         button.setOpaque(true);
-        return button;
+        panel.add(button);
     }
 
     public static void createPlayers(int numberOfPlayers) {
@@ -132,7 +137,7 @@ public class Application{
         int[] turn = new int[numberOfPlayers];
         for (int i = 0; i < numberOfPlayers; i++) createPlayerNames(i);
         for (int i = 0; i < numberOfPlayers; i++) {
-            createThrowButton(660 + (200 * i), 100);
+            createThrowButton((1000 - 100 * numberOfPlayers) + (200 * i), 100);
             createExitButton();
             panel.repaint();
             throwed = 0;
@@ -157,13 +162,16 @@ public class Application{
             standardTurnCicle.add(player[i]);
             createPlayerLabel(i+1, players.get(standardTurnCicle.get(i)).pion);
         }
+        createNextButton(1000 - 100 * numberOfPlayers, 300 + (50 * (numberOfPlayers + 1)));
         panel.repaint();
+        while (!clicked) Thread.onSpinWait();
+
     }
 
     public static void createPlayerNames(int i) {
         JLabel label = new JLabel(players.get(i).pion);
         label.setFont(new Font("Serif", Font.PLAIN, 20));
-        label.setBounds(660 + (200 * i),50,100,40);
+        label.setBounds((1000 - 100 * numberOfPlayers) + (200 * i),50,100,40);
         label.setForeground(Color.WHITE);
         panel.add(label);
     }
@@ -172,7 +180,10 @@ public class Application{
         JButton button = new JButton("Throw");
         button.setBounds(x, y,100,50);
         Random random = new Random();
-        button.addActionListener(e -> throwed = (random.nextInt(6) + 1));
+        button.addActionListener(e -> {
+            throwed = (random.nextInt(6) + 1);
+            button.setVisible(false);
+        });
         button.setBackground(Color.BLACK);
         button.setBorderPainted(false);
         button.setForeground(Color.WHITE);
@@ -182,9 +193,9 @@ public class Application{
     }
 
     public static void createThrowLabel(int i) {
-        JLabel label = new JLabel("" + throwed);
+        JLabel label = new JLabel("" + throwed + " is throwed");
         label.setFont(new Font("Serif", Font.PLAIN, 20));
-        label.setBounds(710 + (200 * i),150,100,40);
+        label.setBounds((1000 - 100 * numberOfPlayers) + (200 * i),100,100,40);
         label.setForeground(Color.WHITE);
         panel.add(label);
     }
@@ -192,68 +203,149 @@ public class Application{
     public static void createPlayerLabel(int i, String pion) {
         JLabel label = new JLabel("" + pion);
         label.setFont(new Font("Serif", Font.PLAIN, 20));
-        label.setBounds(710,200 + (50 * i),300,40);
+        label.setBounds(1000 - 100 * numberOfPlayers,300 + (50 * i),300,40);
         label.setForeground(Color.WHITE);
         panel.add(label);
     }
 
-    public static void createEvents(){
+    public static void createNextButton(int x, int y) {
+        clicked = false;
+        JButton button = new JButton("Next");
+        button.setBounds(x,y, 150, 50);
+        button.addActionListener(e -> clicked = true);
+        button.setBackground(Color.BLACK);
+        button.setBorderPainted(false);
+        button.setForeground(Color.WHITE);
+        button.setFocusable(false);
+        button.setOpaque(true);
+        panel.add(button);
+    }
+
+    public static void createEvents() {
         CsvReader csvReader = new CsvReader("src/Events.csv");
         csvReader.skipRow();
         csvReader.setSeparator(';');
         while (csvReader.loadRow()) {
             Event event = new Event();
-            event.name = csvReader.getString(0);
-            event.place = csvReader.getInt(1);
-            event.description = csvReader.getString(2);
+            event.gebied = csvReader.getString(0);
+            event.description = csvReader.getString(1);
+            event.minimumPlaces = csvReader.getInt(2);
+            event.maximumPlaces = csvReader.getInt(3);
             events.add(event);
         }
     }
 
-    public static boolean playing() throws InterruptedException {
+    public static boolean playing() {
         turn.addAll(standardTurnCicle);
         int firstPerson = standardTurnCicle.get(0);
         panel.removeAll();
         panel.revalidate();
         do {
             throwed = 0;
-            createPlayerLabel(0, players.get(turn.get(0)).pion + " is aan zet");
-            createThrowButton(710, 250);
-            generateEvent();
+            createText( 500,50, players.get(turn.get(0)).pion + " is aan zet");
+            createThrowButton(750, 50);
+            createEventButton();
             createExitButton();
             panel.repaint();
             while (throwed == 0) {
                 Thread.onSpinWait();
             }
-            createPlayerLabel(2, players.get(turn.get(0)).pion + " heeft " + throwed + " gegooid");
+            createText(500, 100, players.get(turn.get(0)).pion + " heeft " + throwed + " gegooid");
             throwed = 0;
+            createNextButton(750, 100);
+            createSkip1Turn(750, 200, turn.get(0));
+            createSkip2Turns(750, 300, turn.get(0));
+            if (timesBeforeEvent == 0) generateEvent();
             panel.repaint();
-            while (throwed == 0) {
+            while (!clicked) {
                 Thread.onSpinWait();
             }
             panel.removeAll();
             panel.revalidate();
             turn.remove(0);
+            timesBeforeEvent--;
+            System.out.println(timesBeforeEvent);
         } while (turn.get(turn.get(0)).equals(turn.get(firstPerson)));
         return true;
     }
 
+    public static void createText(int x, int y, String text) {
+        JLabel label = new JLabel(text);
+        label.setFont(new Font("Serif", Font.PLAIN, 20));
+        label.setBounds(x,y,300,40);
+        label.setForeground(Color.WHITE);
+        panel.add(label);
+    }
+
+    public static void createSkip1Turn(int x, int y, int person) {
+        clicked = false;
+        JButton button = new JButton("Skip 1 turn");
+        button.setBounds(x,y, 150, 50);
+        button.addActionListener(e -> {
+            for (int i = 1; i <= numberOfPlayers; i++) {
+                if (person == turn.get(i)) {
+                    turn.remove(i);
+                    break;
+                }
+            }
+        });
+        button.setBackground(Color.BLACK);
+        button.setBorderPainted(false);
+        button.setForeground(Color.WHITE);
+        button.setFocusable(false);
+        button.setOpaque(true);
+        panel.add(button);
+    }
+
+    public static void createSkip2Turns(int x, int y, int person) {
+        clicked = false;
+        JButton button = new JButton("Skip 2 turns");
+        button.setBounds(x,y, 150, 50);
+        button.addActionListener(e -> {
+            for (int i = 1; i <= numberOfPlayers*2; i++) {
+                if (person == turn.get(i)) {
+                    turn.remove(i);
+                    break;
+                }
+            }
+        });
+        button.setBackground(Color.BLACK);
+        button.setBorderPainted(false);
+        button.setForeground(Color.WHITE);
+        button.setFocusable(false);
+        button.setOpaque(true);
+        panel.add(button);
+    }
+
     public static void generateEvent() {
-        createEventButton();
+        Random random = new Random();
+        timesBeforeEvent = random.nextInt(numberOfPlayers*3) + numberOfPlayers*3;
+        JLabel label = new JLabel(events.remove(random.nextInt(events.size())).description);
+        label.setFont(new Font("Serif", Font.PLAIN, 20));
+        label.setBounds(500, 400,1500,50);
+        int randomEvent = random.nextInt(events.size());
+        label.setText(events.remove(randomEvent).description);
+        label.setVisible(true);
+        label.setForeground(Color.WHITE);
+        panel.add(label);
     }
 
     public static void createEventButton() {
+        Random random = new Random();
         if (events.size() == 0) createEvents();
         JButton button = new JButton("Generate event");
         button.setBounds(1400, 200,100,50);
         JLabel label = new JLabel("");
         label.setBounds(1400, 250,500,50);
-        Random random = new Random();
-        label.setText(events.remove(random.nextInt(events.size())).description);
+        int randomEvent = random.nextInt(events.size());
+        label.setText(events.get(randomEvent).description);
         label.setVisible(false);
         label.setForeground(Color.WHITE);
         button.addActionListener(e -> {
+            events.remove(randomEvent);
+            timesBeforeEvent = random.nextInt(numberOfPlayers*3) + numberOfPlayers*3;
             label.setVisible(true);
+            button.setVisible(false);
         });
         button.setBackground(Color.BLACK);
         button.setBorderPainted(false);
